@@ -38,24 +38,37 @@ def kurlari_getir():
         d = r.json()
         usd = d["rates"]["TRY"]
         eur = usd / d["rates"]["EUR"]
-        gram_altin = (2050.0 / 31.1035) * usd  # Ons Altın simülasyonu
+        gram_altin = (2800.0)  # Manuel simülasyon veya API'den çekilebilir
         return {"USD": usd, "EUR": eur, "ALTIN": gram_altin}
     except:
-        return {"USD": 30.50, "EUR": 33.10, "ALTIN": 2050.0}
+        return {"USD": 30.50, "EUR": 33.10, "ALTIN": 2500.0}
 
 
 # --- SAYFA AYARLARI ---
 st.set_page_config(page_title="Anıl Finance Dashboard", page_icon="📈", layout="wide")
 
-# CSS ile Estetik Dokunuşlar (Döviz Widget'ı için)
+# CSS GÜNCELLEMESİ: Yazıları koyu ve görünür yaptık
 st.markdown("""
     <style>
     .market-widget {
-        background-color: #f0f2f6;
-        padding: 10px;
-        border-radius: 10px;
-        border: 1px solid #d1d5db;
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 12px;
+        border-left: 6px solid #007bff;
+        box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
         text-align: center;
+    }
+    .market-widget p { 
+        margin: 0; 
+        font-size: 14px; 
+        color: #495057 !important; /* Koyu Gri Yazı */
+        font-weight: bold;
+    }
+    .market-widget h4 { 
+        margin: 5px 0 0 0; 
+        color: #212529 !important; /* Siyah Yazı */
+        font-size: 22px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -68,27 +81,27 @@ if 'user' not in st.session_state:
 
 kurlar = kurlari_getir()
 
-# --- ÜST BAR (GİRİŞ / KAYIT) ---
+# --- ÜST BAR ---
 header_col, auth_col = st.columns([8, 2])
 
 with header_col:
     st.title("💰 Kişisel Finans ve Analiz Portalı")
-    st.caption("v11.0 | Streamlit Dashboard")
+    st.caption("v11.1 | Visibility Patch")
 
 with auth_col:
     if st.session_state.user:
         st.write(f"👤 **{st.session_state.user}**")
-        if st.button("Güvenli Çıkış"):
+        if st.button("Güvenli Çıkış", use_container_width=True):
             st.session_state.user = None
             st.rerun()
     else:
-        with st.popover("🔑 Giriş veya Kayıt"):
-            tab_l, tab_r = st.tabs(["Giriş", "Kayıt"])
+        with st.popover("🔑 Giriş veya Kayıt", use_container_width=True):
+            tab_l, tab_r = st.tabs(["Giriş Yap", "Kayıt Ol"])
             with tab_l:
-                u = st.text_input("Username")
-                p = st.text_input("Password", type="password")
-                if st.button("Giriş Yap"):
-                    if u == "admin" and p == "12345":  # ADMIN HESABI
+                u = st.text_input("Kullanıcı Adı")
+                p = st.text_input("Şifre", type="password")
+                if st.button("Giriş", use_container_width=True):
+                    if u == "admin" and p == "12345":
                         st.session_state.user = "ADMIN"
                         st.rerun()
                     elif u in st.session_state.db and st.session_state.db[u]['s'] == p:
@@ -97,9 +110,9 @@ with auth_col:
                     else:
                         st.error("Hatalı!")
             with tab_r:
-                nu = st.text_input("New User")
-                np = st.text_input("New Pass", type="password")
-                if st.button("Kayıt Ol"):
+                nu = st.text_input("Yeni Kullanıcı Adı")
+                np = st.text_input("Yeni Şifre", type="password")
+                if st.button("Hesap Oluştur", use_container_width=True):
                     if nu and nu not in st.session_state.db:
                         st.session_state.db[nu] = {'s': np, 'b': 0.0, 'g': []}
                         verileri_yaz(st.session_state.db)
@@ -107,68 +120,61 @@ with auth_col:
 
 st.write("---")
 
-# --- ANA PANEL (DEMO MODU / GİRİŞSİZ) ---
+# --- ANA PANEL ---
 if st.session_state.user == "ADMIN":
-    st.header("👑 Yönetici Paneli")
-    st.write("Sistemdeki tüm kullanıcıların listesi ve verileri:")
+    st.header("👑 Sistem Yönetici Paneli")
     st.json(st.session_state.db)
-    if st.button("Veritabanını Sıfırla (Kritik)"):
-        st.session_state.db = {}
-        verileri_yaz({})
-        st.rerun()
-
 else:
-    # Sol Taraf: Finansal İşlemler (Giriş yapılmışsa aktif)
-    # Orta Taraf: Grafikler ve Özet
     main_col, side_col = st.columns([7, 3])
 
     with main_col:
         if st.session_state.user:
             u_data = st.session_state.db[st.session_state.user]
-            st.subheader(f"💵 Bakiyeniz: {u_data['b']:.2f} TL")
-
-            t1, t2 = st.tabs(["📊 Analiz Grafiği", "📋 İşlem Geçmişi"])
+            st.subheader(f"💵 Mevcut Bakiyeniz: {u_data['b']:.2f} TL")
+            t1, t2 = st.tabs(["📊 Harcama Analizi", "📋 İşlem Geçmişi"])
             with t1:
                 if u_data['g']:
                     df = pd.DataFrame(u_data['g'])
                     st.area_chart(df.groupby("k")["m"].sum())
             with t2:
                 if u_data['g']:
-                    st.dataframe(pd.DataFrame(u_data['g']), use_container_width=True)
+                    st.dataframe(pd.DataFrame(u_data['g']).sort_index(ascending=False), use_container_width=True)
         else:
-            st.info(
-                "⚠️ **Demo Modu:** Kendi cüzdanınızı yönetmek için sağ üstten giriş yapın. Şu an sadece genel piyasaları görüyorsunuz.")
-            st.write("### Neden Kayıt Olmalısınız?")
-            st.write("- Harcamalarınızı kategorize edin\n- PDF raporları alın\n- Geçmişinizi asla kaybetmeyin")
+            st.info("👋 **Demo Modu:** Kendi cüzdanınızı yönetmek için sağ üstten giriş yapın.")
+            st.write("---")
+            st.subheader("💡 Neden Üye Olmalısınız?")
+            st.markdown("* 💰 **Cüzdan Takibi**\n* 📉 **Grafiksel Analiz**\n* 📄 **PDF Raporu**")
 
-    # Sağ Taraf: Döviz Widget'ı (Senin istediğin 3'lü estetik alan)
+    # SAĞ TARAF: DÜZELTİLEN WIDGET'LAR
     with side_col:
-        st.subheader("🌍 Piyasa Verileri")
+        st.subheader("🌍 Piyasa Göstergeleri")
         st.markdown(f"""
             <div class="market-widget">
-                <p>🇺🇸 <b>Dolar:</b> {kurlar['USD']:.2f} TL</p>
-            </div><br>
+                <p>🇺🇸 ABD DOLARI</p>
+                <h4>{kurlar['USD']:.2f} TL</h4>
+            </div>
             <div class="market-widget">
-                <p>🇪🇺 <b>Euro:</b> {kurlar['EUR']:.2f} TL</p>
-            </div><br>
+                <p>🇪🇺 EURO</p>
+                <h4>{kurlar['EUR']:.2f} TL</h4>
+            </div>
             <div class="market-widget">
-                <p>🟡 <b>Gram Altın:</b> {kurlar['ALTIN']:.0f} TL</p>
+                <p>🟡 GRAM ALTIN</p>
+                <h4>{kurlar['ALTIN']:.0f} TL</h4>
             </div>
         """, unsafe_allow_html=True)
 
         if st.session_state.user:
             st.write("---")
-            st.subheader("📥 İşlem Girişi")
-            with st.form("islem_formu"):
-                tip = st.selectbox("Tür", ["Gelir", "Gider"])
+            st.subheader("📥 Yeni İşlem Ekle")
+            with st.form("hizli_islem", clear_on_submit=True):
+                tip = st.selectbox("İşlem Tipi", ["Gelir", "Gider"])
                 mik = st.number_input("Miktar", min_value=0.0)
-                kat = st.selectbox("Kategori", ["Gıda", "Eğitim", "Oyun", "Ulaşım", "Maaş"])
-                if st.form_submit_button("Kaydet"):
+                kat = st.selectbox("Kategori", ["Gıda", "Eğitim", "Oyun/Hobi", "Ulaşım", "Kira", "Maaş"])
+                if st.form_submit_button("Sisteme İşle", use_container_width=True):
                     u_data['b'] += mik if tip == "Gelir" else -mik
-                    u_data['g'].append({'t': datetime.now().strftime("%Y-%m-%d"), 'tip': tip, 'm': mik, 'k': kat})
+                    u_data['g'].append({'t': datetime.now().strftime("%Y-%m-%d %H:%M"), 'tip': tip, 'm': mik, 'k': kat})
                     verileri_yaz(st.session_state.db)
                     st.rerun()
 
-# Alt Bilgi
 st.write("---")
-st.caption("Developed by Anıl | Üsküdar University Computer Engineering")
+st.caption("Developed by Anıl | Visibility Patch v11.1")
