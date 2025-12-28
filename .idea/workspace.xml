@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d0a5ce99-7376-48a7-8071-7f66c8aa2687" name="Changes" comment="fix: module not found error and add login system v8.0" />
+    <list default="true" id="d0a5ce99-7376-48a7-8071-7f66c8aa2687" name="Changes" comment="feat: implement multi-user registration and conditional access (v9.0)&#10;&#10;Migrated to a multi-user data structure in kullanici_verileri.json.&#10;&#10;Added User Registration and Login systems with session state management.&#10;&#10;Implemented &quot;Public First&quot; view: Users can see live market data before logging in.&#10;&#10;Secured personal dashboards; financial records are now private to each user.&#10;&#10;Wrapped PDF generation in try-except blocks to ensure stability during dependency installs." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -129,7 +129,15 @@
       <option name="project" value="LOCAL" />
       <updated>1766953786202</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="feat: implement multi-user registration and conditional access (v9.0)&#10;&#10;Migrated to a multi-user data structure in kullanici_verileri.json.&#10;&#10;Added User Registration and Login systems with session state management.&#10;&#10;Implemented &quot;Public First&quot; view: Users can see live market data before logging in.&#10;&#10;Secured personal dashboards; financial records are now private to each user.&#10;&#10;Wrapped PDF generation in try-except blocks to ensure stability during dependency installs.">
+      <option name="closed" value="true" />
+      <created>1766954265373</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1766954265373</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -152,6 +160,7 @@
     <MESSAGE value="feat: add live exchange rates and PDF report generation (v7.0)" />
     <MESSAGE value="feat: integrate live market data for USD, EUR, Gold and Silver (v7.1)" />
     <MESSAGE value="fix: module not found error and add login system v8.0" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: module not found error and add login system v8.0" />
+    <MESSAGE value="feat: implement multi-user registration and conditional access (v9.0)&#10;&#10;Migrated to a multi-user data structure in kullanici_verileri.json.&#10;&#10;Added User Registration and Login systems with session state management.&#10;&#10;Implemented &quot;Public First&quot; view: Users can see live market data before logging in.&#10;&#10;Secured personal dashboards; financial records are now private to each user.&#10;&#10;Wrapped PDF generation in try-except blocks to ensure stability during dependency installs." />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: implement multi-user registration and conditional access (v9.0)&#10;&#10;Migrated to a multi-user data structure in kullanici_verileri.json.&#10;&#10;Added User Registration and Login systems with session state management.&#10;&#10;Implemented &quot;Public First&quot; view: Users can see live market data before logging in.&#10;&#10;Secured personal dashboards; financial records are now private to each user.&#10;&#10;Wrapped PDF generation in try-except blocks to ensure stability during dependency installs." />
   </component>
 </project>

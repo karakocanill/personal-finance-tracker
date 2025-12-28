@@ -4,126 +4,123 @@ import os
 import pandas as pd
 import requests
 from datetime import datetime
-from fpdf import FPDF
 
-# Veri dosyası
-DOSYA_ADI = "kullanici_verileri.json"
+# PDF kütüphanesini hata vermeden yükleme denemesi
+try:
+    from fpdf import FPDF
+
+    PDF_DESTEGI = True
+except ImportError:
+    PDF_DESTEGI = False
+
+# Dosya yolları
+DOSYA_YOLU = "kullanici_verileri.json"
 
 
-def verileri_yukle():
-    if os.path.exists(DOSYA_ADI):
+def verileri_oku():
+    if os.path.exists(DOSYA_YOLU):
         try:
-            with open(DOSYA_ADI, "r", encoding="utf-8") as dosya:
-                return json.load(dosya)
+            with open(DOSYA_YOLU, "r", encoding="utf-8") as f:
+                return json.load(f)
         except:
-            pass
+            return {}
     return {}
 
 
-def verileri_kaydet(veri):
-    with open(DOSYA_ADI, "w", encoding="utf-8") as dosya:
-        json.dump(veri, dosya, indent=4, ensure_ascii=False)
+def verileri_yaz(data):
+    with open(DOSYA_YOLU, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
 
 
-def piyasa_verilerini_al():
+def kurlari_getir():
     try:
-        url = "https://api.exchangerate-api.com/v4/latest/USD"
-        res = requests.get(url)
-        data = res.json()
-        usd = data["rates"]["TRY"]
-        eur = usd / data["rates"]["EUR"]
-        return {"USD": usd, "EUR": eur}
+        r = requests.get("https://api.exchangerate-api.com/v4/latest/USD")
+        d = r.json()
+        return {"USD": d["rates"]["TRY"], "EUR": d["rates"]["TRY"] / d["rates"]["EUR"]}
     except:
         return {"USD": 30.0, "EUR": 32.0}
 
 
-# --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Anıl Finance Pro Max", page_icon="💎", layout="wide")
+# --- ARAYÜZ AYARLARI ---
+st.set_page_config(page_title="Anıl Finance v10", page_icon="📈", layout="wide")
 
-# Veri Altyapısını Başlat
-if 'tum_veriler' not in st.session_state:
-    st.session_state.tum_veriler = verileri_yukle()
-if 'user' not in st.session_state:
-    st.session_state.user = None
+# Oturum yönetimi
+if 'db' not in st.session_state:
+    st.session_state.db = verileri_oku()
+if 'kullanici' not in st.session_state:
+    st.session_state.kullanici = None
 
-# --- ÜST MENÜ: GİRİŞ / KAYIT ---
-piyasa = piyasa_verilerini_al()
+kurlar = kurlari_getir()
 
-# Sağ üst köşede giriş butonu simülasyonu
-with st.container():
-    col_t, col_l = st.columns([8, 2])
-    with col_t:
-        st.title("🚀 Global Finans Dashboard")
-    with col_l:
-        if st.session_state.user:
-            st.write(f"👤 {st.session_state.user}")
-            if st.button("Çıkış Yap"):
-                st.session_state.user = None
+# --- HEADER VE AUTH ---
+c_baslik, c_giris = st.columns([3, 1])
+with c_baslik:
+    st.title("🌐 Anıl Global Finans Paneli")
+    st.caption("v10.0 Stable Build | Multi-User SaaS")
+
+with c_giris:
+    if st.session_state.kullanici:
+        st.write(f"👤 **{st.session_state.kullanici}**")
+        if st.button("Çıkış"):
+            st.session_state.kullanici = None
+            st.rerun()
+    else:
+        secenek = st.radio("Hesap", ["İncele", "Giriş", "Kayıt"], horizontal=True)
+
+# Auth İşlemleri
+if not st.session_state.kullanici:
+    if secenek == "Giriş":
+        u = st.text_input("Username")
+        p = st.text_input("Password", type="password")
+        if st.button("Giriş Yap"):
+            if u in st.session_state.db and st.session_state.db[u]['s'] == p:
+                st.session_state.kullanici = u
                 st.rerun()
-        else:
-            mod = st.selectbox("Hesap İşlemi", ["Görüntüleme Modu", "Giriş Yap", "Kayıt Ol"])
+            else:
+                st.error("Hatalı!")
+    elif secenek == "Kayıt":
+        nu = st.text_input("New User")
+        np = st.text_input("New Pass", type="password")
+        if st.button("Kayıt Ol"):
+            if nu and nu not in st.session_state.db:
+                st.session_state.db[nu] = {'s': np, 'b': 0.0, 'g': []}
+                verileri_yaz(st.session_state.db)
+                st.success("Hesap açıldı!")
 
-# --- GİRİŞ / KAYIT MANTIĞI ---
-if not st.session_state.user:
-    if mod == "Giriş Yap":
-        with st.form("login"):
-            u = st.text_input("Kullanıcı Adı")
-            p = st.text_input("Şifre", type="password")
-            if st.form_submit_button("Giriş"):
-                if u in st.session_state.tum_veriler and st.session_state.tum_veriler[u]['sifre'] == p:
-                    st.session_state.user = u
-                    st.rerun()
-                else:
-                    st.error("Hatalı bilgiler!")
-    elif mod == "Kayıt Ol":
-        with st.form("register"):
-            new_u = st.text_input("Yeni Kullanıcı Adı")
-            new_p = st.text_input("Şifre Belirle", type="password")
-            if st.form_submit_button("Hesap Oluştur"):
-                if new_u and new_u not in st.session_state.tum_veriler:
-                    st.session_state.tum_veriler[new_u] = {"sifre": new_p, "bakiye": 0.0, "gecmis": []}
-                    verileri_kaydet(st.session_state.tum_veriler)
-                    st.success("Kayıt başarılı! Şimdi giriş yapabilirsiniz.")
-                else:
-                    st.error("Bu kullanıcı adı alınmış veya geçersiz.")
-
-# --- ANA PANEL: HERKESE AÇIK KISIM (PİYASALAR) ---
+# --- PİYASA EKRANI (HERKESE AÇIK) ---
 st.write("---")
-c1, c2, c3 = st.columns(3)
-c1.metric("🇺🇸 USD/TRY", f"{piyasa['USD']:.2f} ₺")
-c2.metric("🇪🇺 EUR/TRY", f"{piyasa['EUR']:.2f} ₺")
-c3.info("Kendi finansal verilerinizi yönetmek için lütfen giriş yapın.")
+col1, col2, col3 = st.columns(3)
+col1.metric("🇺🇸 Dolar", f"{kurlar['USD']:.2f} TL")
+col2.metric("🇪🇺 Euro", f"{kurlar['EUR']:.2f} TL")
+col3.info("Detaylı analiz için giriş yapın.")
 
-# --- KULLANICIYA ÖZEL KISIM ---
-if st.session_state.user:
-    user_data = st.session_state.tum_veriler[st.session_state.user]
+# --- KULLANICI PANELİ ---
+if st.session_state.kullanici:
+    u_verisi = st.session_state.db[st.session_state.kullanici]
 
-    st.sidebar.header(f"📥 {st.session_state.user} Paneli")
-    with st.sidebar.form("islem"):
-        tip = st.selectbox("Tür", ["Gelir", "Gider"])
-        mik = st.number_input("Miktar", min_value=0.0)
-        acik = st.text_input("Açıklama")
-        if st.form_submit_button("Kaydet"):
-            user_data["bakiye"] += mik if tip == "Gelir" else -mik
-            user_data["gecmis"].append(
-                {"tarih": datetime.now().strftime("%Y-%m-%d"), "tip": tip, "miktar": mik, "ozet": acik})
-            verileri_kaydet(st.session_state.tum_veriler)
+    st.sidebar.header("İşlem Ekle")
+    with st.sidebar.form("ekle"):
+        tip = st.selectbox("Tip", ["Gelir", "Gider"])
+        mik = st.number_input("Tutar", min_value=0.0)
+        kat = st.selectbox("Kat", ["Gıda", "Eğitim", "Hobi", "Ulaşım", "Maaş"])
+        if st.form_submit_button("Ekle"):
+            u_verisi['b'] += mik if tip == "Gelir" else -mik
+            u_verisi['g'].append({'t': datetime.now().strftime("%Y-%m-%d"), 'tip': tip, 'm': mik, 'k': kat})
+            verileri_yaz(st.session_state.db)
             st.rerun()
 
-    st.subheader(f"💰 Bakiyeniz: {user_data['bakiye']:.2f} TL")
-    if user_data["gecmis"]:
-        st.dataframe(pd.DataFrame(user_data["gecmis"]), use_container_width=True)
+    st.subheader(f"💰 Cüzdan Bakiyesi: {u_verisi['b']:.2f} TL")
+    t1, t2 = st.tabs(["Geçmiş", "Rapor"])
 
-        # PDF BUTONU (Hata Alınan Kısım - Try-Except İçinde)
-        if st.button("📄 Raporu PDF İndir"):
-            try:
-                pdf = FPDF()
-                pdf.add_page()
-                pdf.set_font("Arial", 'B', 12)
-                pdf.cell(200, 10, txt=f"{st.session_state.user} Finans Raporu", ln=True, align='C')
-                out = pdf.output(dest='S').encode('latin-1')
-                st.download_button("İndirmeyi Başlat", data=out, file_name="rapor.pdf")
-            except Exception as e:
-                st.error(f"PDF kütüphanesi yüklenmemiş olabilir: {e}")
-else:
-    st.warning("⚠️ Kişisel cüzdanınızı görmek için lütfen sağ üstten giriş yapın.")
+    with t1:
+        if u_verisi['g']: st.dataframe(pd.DataFrame(u_verisi['g']), use_container_width=True)
+
+    with t2:
+        if not PDF_DESTEGI:
+            st.warning("PDF sistemi hazır değil, bekleyiniz...")
+        elif st.button("PDF İndir"):
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", 'B', 14)
+            pdf.cell(200, 10, txt=f"Rapor: {st.session_state.kullanici}", ln=True, align='C')
+            st.download_button("Download", pdf.output(dest='S').encode('latin-1'), "rapor.pdf")
