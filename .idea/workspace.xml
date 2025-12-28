@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d0a5ce99-7376-48a7-8071-7f66c8aa2687" name="Changes" comment="fix: improve visibility of market widgets with CSS high contrast (v11.1)" />
+    <list default="true" id="d0a5ce99-7376-48a7-8071-7f66c8aa2687" name="Changes" comment="feat: move transaction form to sidebar and fix widget visibility (v12.0)">
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -169,7 +171,23 @@
       <option name="project" value="LOCAL" />
       <updated>1766955044584</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="fix: improve visibility of market widgets with CSS high contrast (v11.1)">
+      <option name="closed" value="true" />
+      <created>1766955094055</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1766955094055</updated>
+    </task>
+    <task id="LOCAL-00015" summary="feat: move transaction form to sidebar and fix widget visibility (v12.0)">
+      <option name="closed" value="true" />
+      <created>1766955333910</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1766955333910</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -196,6 +214,7 @@
     <MESSAGE value="v10.0: stable build with conditional fpdf loading" />
     <MESSAGE value="enhance UI/UX with CSS widgets and popover authentication (v11.0)" />
     <MESSAGE value="fix: improve visibility of market widgets with CSS high contrast (v11.1)" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: improve visibility of market widgets with CSS high contrast (v11.1)" />
+    <MESSAGE value="feat: move transaction form to sidebar and fix widget visibility (v12.0)" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: move transaction form to sidebar and fix widget visibility (v12.0)" />
   </component>
 </project>

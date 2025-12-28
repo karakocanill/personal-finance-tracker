@@ -38,37 +38,37 @@ def kurlari_getir():
         d = r.json()
         usd = d["rates"]["TRY"]
         eur = usd / d["rates"]["EUR"]
-        gram_altin = (2850.0)  # Manuel simülasyon
+        gram_altin = 2950.0  # Güncel simülasyon
         return {"USD": usd, "EUR": eur, "ALTIN": gram_altin}
     except:
-        return {"USD": 30.50, "EUR": 33.10, "ALTIN": 2500.0}
+        return {"USD": 30.0, "EUR": 32.0, "ALTIN": 2500.0}
 
 
 # --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Anıl Finance Pro", page_icon="💹", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Anıl Finance Pro", page_icon="💹", layout="wide")
 
-# CSS: Sidebar ve Widget'lar için Özel Tasarım
+# CSS: Sidebar ve Koyu Tema Widget Tasarımı
 st.markdown("""
     <style>
-    /* Sidebar Arka Planı */
+    /* Sidebar genişliği ve rengi */
     [data-testid="stSidebar"] {
-        background-color: #1e1e2e;
-        color: white;
+        background-color: #111111;
+        min-width: 350px;
     }
-    /* Özel Döviz Widget'ları (Sol Menü İçin) */
-    .market-box {
-        background-color: #2b2b3b;
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 10px;
-        border-left: 4px solid #7f5af0;
+    /* Döviz Widget'ları */
+    .market-card {
+        background-color: #1e1e1e;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 15px;
+        border-right: 5px solid #00ff88;
         text-align: left;
     }
-    .market-box p { margin: 0; font-size: 12px; color: #94a1b2; }
-    .market-box h3 { margin: 5px 0 0 0; font-size: 18px; color: #fffffe; }
+    .market-card p { margin: 0; font-size: 13px; color: #aaaaaa; font-weight: bold; }
+    .market-card h3 { margin: 5px 0 0 0; font-size: 24px; color: #ffffff; }
 
-    /* Ana Panel Yazı Renkleri */
-    .stMarkdown p { color: #f8f9fa; }
+    /* Metrik kutuları düzenleme */
+    [data-testid="stMetricValue"] { font-size: 28px !important; color: #00ff88 !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -81,23 +81,23 @@ if 'user' not in st.session_state:
 kurlar = kurlari_getir()
 
 # --- ÜST BAR (GİRİŞ / KAYIT) ---
-header_col, auth_col = st.columns([8, 2])
-with header_col:
-    st.title("💹 Kişisel Finans ve Analiz Portalı")
-    st.caption("v12.0 Pro Build | Sidebar Management Enabled")
+h_col, a_col = st.columns([8, 2])
+with h_col:
+    st.title("💹 Finans Takip & Analiz Merkezi")
+    st.caption("v12.1 Pro | Bilgisayar Mühendisliği Öğrenci Projesi")
 
-with auth_col:
+with a_col:
     if st.session_state.user:
         if st.button("🚪 Çıkış Yap", use_container_width=True):
             st.session_state.user = None
             st.rerun()
     else:
-        with st.popover("🔑 Giriş / Kayıt", use_container_width=True):
-            t_in, t_up = st.tabs(["Giriş", "Kayıt"])
-            with t_in:
-                u = st.text_input("Username")
-                p = st.text_input("Password", type="password")
-                if st.button("Giriş", use_container_width=True):
+        with st.popover("🔑 Giriş veya Kayıt", use_container_width=True):
+            t1, t2 = st.tabs(["Giriş", "Kayıt"])
+            with t1:
+                u = st.text_input("Kullanıcı Adı")
+                p = st.text_input("Şifre", type="password")
+                if st.button("Giriş", key="login_btn"):
                     if u == "admin" and p == "12345":
                         st.session_state.user = "ADMIN"; st.rerun()
                     elif u in st.session_state.db and st.session_state.db[u]['s'] == p:
@@ -105,84 +105,88 @@ with auth_col:
                         st.rerun()
                     else:
                         st.error("Hatalı!")
-            with t_up:
-                nu = st.text_input("New Username")
-                np = st.text_input("New Password", type="password")
-                if st.button("Hesap Oluştur", use_container_width=True):
+            with t2:
+                nu = st.text_input("Yeni Kullanıcı Adı")
+                np = st.text_input("Yeni Şifre", type="password")
+                if st.button("Kayıt Ol", key="reg_btn"):
                     if nu and nu not in st.session_state.db:
                         st.session_state.db[nu] = {'s': np, 'b': 0.0, 'g': []}
                         verileri_yaz(st.session_state.db)
-                        st.success("Başarılı!")
+                        st.success("Hesap oluşturuldu!")
 
 st.write("---")
 
-# --- SIDEBAR (YAN MENÜ) ---
+# --- SIDEBAR (SOL MENÜ) ---
 with st.sidebar:
     if st.session_state.user and st.session_state.user != "ADMIN":
-        st.header(f"👋 Merhaba, {st.session_state.user}")
+        st.subheader(f"👋 Hoş geldin, {st.session_state.user}")
         st.write("---")
 
-        # GELİR - GİDER FORMU (Tıpkı yeni sohbet gibi)
-        st.subheader("➕ Yeni İşlem Ekle")
-        with st.form("islem_formu", clear_on_submit=True):
-            tip = st.selectbox("İşlem Tipi", ["Gelir", "Gider"])
-            mik = st.number_input("Tutar (TL)", min_value=0.0, format="%.2f")
-            kat = st.selectbox("Kategori", ["Gıda", "Eğitim", "Hobi", "Ulaşım", "Kira", "Maaş", "Yatırım"])
-            not_bilgi = st.text_input("Açıklama / Not")
+        # YENİ İŞLEM FORMU (Sidebar'da)
+        st.markdown("### 📥 İşlem Girişi")
+        with st.form("islem_sidebar", clear_on_submit=True):
+            islem_tipi = st.selectbox("Tür", ["Gelir", "Gider"])
+            miktar = st.number_input("Miktar (TL)", min_value=0.0)
+            kategori = st.selectbox("Kategori", ["Yemek", "Eğitim", "Hobi", "Ulaşım", "Kira", "Maaş", "Yatırım"])
             if st.form_submit_button("Sisteme Kaydet", use_container_width=True):
-                u_data = st.session_state.db[st.session_state.user]
-                u_data['b'] += mik if tip == "Gelir" else -mik
-                u_data['g'].append(
-                    {'t': datetime.now().strftime("%Y-%m-%d %H:%M"), 'tip': tip, 'm': mik, 'k': kat, 'n': not_bilgi})
+                u_verisi = st.session_state.db[st.session_state.user]
+                u_verisi['b'] += miktar if islem_tipi == "Gelir" else -miktar
+                u_verisi['g'].append(
+                    {'t': datetime.now().strftime("%Y-%m-%d %H:%M"), 'tip': islem_tipi, 'm': miktar, 'k': kategori})
                 verileri_yaz(st.session_state.db)
                 st.rerun()
 
         st.write("---")
 
-    # ÖZEL DÖVİZ WIDGETLARI (Sol Menüde En Altta)
-    st.subheader("🌍 Piyasa Verileri")
+    # DÖVİZ WIDGET'LARI (Sol Menü Altı)
+    st.markdown("### 🌍 Canlı Piyasalar")
     st.markdown(f"""
-        <div class="market-box">
-            <p>ABD DOLARI</p>
+        <div class="market-card">
+            <p>🇺🇸 ABD DOLARI</p>
             <h3>{kurlar['USD']:.2f} ₺</h3>
         </div>
-        <div class="market-box">
-            <p>EURO</p>
+        <div class="market-card">
+            <p>🇪🇺 EURO</p>
             <h3>{kurlar['EUR']:.2f} ₺</h3>
         </div>
-        <div class="market-box">
-            <p>GRAM ALTIN</p>
+        <div class="market-card">
+            <p>🟡 GRAM ALTIN</p>
             <h3>{kurlar['ALTIN']:.0f} ₺</h3>
         </div>
     """, unsafe_allow_html=True)
 
 # --- ANA PANEL ---
 if st.session_state.user == "ADMIN":
-    st.header("👑 Admin Panel")
+    st.header("👑 Admin Paneli")
     st.json(st.session_state.db)
 elif st.session_state.user:
     u_data = st.session_state.db[st.session_state.user]
 
-    # Dashboard Metrikleri
-    c1, c2, c3 = st.columns(3)
-    c1.metric("💵 Güncel Bakiyeniz", f"{u_data['b']:.2f} TL")
-    c2.metric("📊 Toplam İşlem", len(u_data['g']))
-    c3.metric("🇺🇸 Dolar Karşılığı", f"${(u_data['b'] / kurlar['USD']):.2f}")
+    # Üst Metrikler
+    m1, m2, m3 = st.columns(3)
+    m1.metric("💵 Güncel Bakiyeniz", f"{u_data['b']:.2f} TL")
+    m2.metric("📊 İşlem Sayısı", len(u_data['g']))
+    m3.metric("📈 Durum", "Hesap Aktif")
 
-    t1, t2 = st.tabs(["📉 Grafiksel Analiz", "📋 İşlem Geçmişi"])
-    with t1:
+    tab1, tab2 = st.tabs(["📉 Grafik Analizi", "📋 İşlem Geçmişi"])
+    with tab1:
         if u_data['g']:
             df = pd.DataFrame(u_data['g'])
             st.area_chart(df.groupby("k")["m"].sum())
-    with t2:
+        else:
+            st.info("Veri ekledikçe buradaki grafikler dolacaktır.")
+    with tab2:
         if u_data['g']:
             st.dataframe(pd.DataFrame(u_data['g']).sort_index(ascending=False), use_container_width=True)
 else:
     # DEMO GÖRÜNÜM
-    st.info("👋 **Demo Modu:** Bütçenizi yönetmek için sağ üstten giriş yapın.")
+    st.info("👋 **Giriş Yapılmadı:** Lütfen sağ üstteki panelden kayıt olun veya giriş yapın.")
     st.write("---")
-    st.subheader("Neden Kayıt Olmalısınız?")
-    st.markdown(
-        "* Harcamalarınızı sol menüden saniyeler içinde kaydedin.\n* Grafiklerle paranızın nereye gittiğini görün.\n* Döviz widget'ları ile piyasayı takip edin.")
+    st.subheader("Bu Platform ile Neler Yapabilirsiniz?")
+    st.markdown("""
+    * **Gelir ve Giderlerinizi** kategorilere ayırarak takip edin.
+    * **Canlı Piyasa** verilerini (Dolar, Euro, Altın) anlık izleyin.
+    * Harcamalarınızı **grafikler** üzerinden analiz edin.
+    """)
 
-st.sidebar.caption("v12.0 Build | Developed by Anıl")
+st.sidebar.caption("v12.1 | Developed by Anıl")
