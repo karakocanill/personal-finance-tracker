@@ -1,103 +1,93 @@
-import os
+import streamlit as st
 import json
+import os
+import pandas as pd
 from datetime import datetime
 
-# Verilerin saklanacağı modern JSON formatı
-# Bu dosya, bakiye ve işlem geçmişini bir arada tutar.
+# Dosya adı
 DOSYA_ADI = "finans_verileri.json"
 
 
 def verileri_yukle():
-    """Dosyadan bakiye ve işlem geçmişini yükler."""
+    """Dosyadan verileri güvenli bir şekilde yükler."""
     if os.path.exists(DOSYA_ADI):
-        with open(DOSYA_ADI, "r", encoding="utf-8") as dosya:
-            try:
-                return json.load(dosya)
-            except json.JSONDecodeError:
-                pass
-    # Dosya yoksa veya bozuksa başlangıç değerleri döndürülür
+        try:
+            with open(DOSYA_ADI, "r", encoding="utf-8") as dosya:
+                content = dosya.read()
+                if content:
+                    return json.loads(content)
+        except (json.JSONDecodeError, IOError):
+            pass
     return {"bakiye": 0.0, "gecmis": []}
 
 
 def verileri_kaydet(veri):
-    """Bakiye ve işlem geçmişini dosyaya düzenli bir şekilde kaydeder."""
+    """Verileri JSON dosyasına kaydeder."""
     with open(DOSYA_ADI, "w", encoding="utf-8") as dosya:
-        # indent=4 verinin okunabilir (yakışıklı) görünmesini sağlar
         json.dump(veri, dosya, indent=4, ensure_ascii=False)
 
 
-def menu():
-    print("\n" + "=" * 45)
-    print(" 💰 KİŞİSEL FİNANS VE İŞLEM TAKİBİ (v3.0)")
-    print("=" * 45)
-    print("1. Gelir Ekle")
-    print("2. Gider Ekle")
-    print("3. İşlem Geçmişini Gör")
-    print("4. Güncel Bakiyeyi Sorgula")
-    print("5. Çıkış")
-    print("-" * 45)
+# --- WEB ARAYÜZÜ AYARLARI ---
+st.set_page_config(page_title="Anıl Finans Takip", page_icon="💰", layout="wide")
 
+st.title("💰 Kişisel Finans Takip Sistemi (Web v4.0)")
+st.markdown("Üsküdar Üniversitesi - Bilgisayar Mühendisliği Öğrenci Projesi")
+st.write("---")
 
-def main():
-    # Program başlarken verileri yüklüyoruz
-    veri = verileri_yukle()
+veri = verileri_yukle()
 
-    while True:
-        menu()
-        secim = input("Yapmak istediğiniz işlemi seçin (1-5): ")
+# --- SIDEBAR: YENİ İŞLEM EKLEME ---
+st.sidebar.header("📥 Yeni İşlem Kaydı")
+with st.sidebar.form("ekleme_formu", clear_on_submit=True):
+    tip = st.selectbox("İşlem Türü", ["Gelir", "Gider"])
+    miktar = st.number_input("Miktar (TL)", min_value=0.0, step=1.0)
+    aciklama = st.text_input("Açıklama", placeholder="Örn: Market, Maaş, Steam")
+    kaydet_butonu = st.form_submit_button("Sisteme Kaydet")
 
-        if secim in ['1', '2']:
-            islem_tipi = "Gelir" if secim == '1' else "Gider"
-            try:
-                miktar = float(input(f"{islem_tipi} miktarını girin: "))
-                if miktar <= 0:
-                    print("❗ Miktar sıfırdan büyük olmalıdır.")
-                    continue
-
-                aciklama = input("İşlem açıklaması (örn: Market, Maaş, Steam): ")
-                # İşlemin yapıldığı anı kaydetmek için datetime kullanıyoruz
-                tarih = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-                # Bakiyeyi güncelle
-                if secim == '1':
-                    veri["bakiye"] += miktar
-                else:
-                    veri["bakiye"] -= miktar
-
-                # Yeni işlemi bir sözlük olarak geçmiş listesine ekle
-                yeni_islem = {
-                    "tarih": tarih,
-                    "tip": islem_tipi,
-                    "miktar": miktar,
-                    "aciklama": aciklama
-                }
-                veri["gecmis"].append(yeni_islem)
-
-                # Her işlemden sonra dosyaya kaydet
-                verileri_kaydet(veri)
-                print(f"✅ {islem_tipi} başarıyla kaydedildi.")
-
-            except ValueError:
-                print("❗ Hata: Lütfen geçerli bir sayı girin (Örn: 150.50).")
-
-        elif secim == '3':
-            print("\n--- 📋 İŞLEM GEÇMİŞİ ---")
-            if not veri["gecmis"]:
-                print("Henüz bir işlem kaydı bulunmuyor.")
-            else:
-                for islem in veri["gecmis"]:
-                    sembol = "+" if islem["tip"] == "Gelir" else "-"
-                    print(f"[{islem['tarih']}] {islem['tip']}: {sembol}{islem['miktar']} TL ({islem['aciklama']})")
-
-        elif secim == '4':
-            print(f"\n💵 GÜNCEL BAKİYENİZ: {veri['bakiye']:.2f} TL")
-
-        elif secim == '5':
-            print("👋 Verileriniz JSON formatında saklandı. İyi günler!")
-            break
+if kaydet_butonu:
+    if miktar > 0 and aciklama:
+        tarih = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if tip == "Gelir":
+            veri["bakiye"] += miktar
         else:
-            print("❗ Geçersiz seçim, lütfen 1-5 arası bir rakam girin.")
+            veri["bakiye"] -= miktar
 
+        veri["gecmis"].append({
+            "tarih": tarih,
+            "tip": tip,
+            "miktar": miktar,
+            "aciklama": aciklama
+        })
+        verileri_kaydet(veri)
+        st.sidebar.success("İşlem kaydedildi!")
+        st.rerun()
+    else:
+        st.sidebar.warning("Lütfen miktar ve açıklama girin.")
 
-if __name__ == "__main__":
-    main()
+# --- ANA PANEL: ANALİZ VE ÖZET ---
+col1, col2 = st.columns(2)
+col1.metric("💵 Güncel Bakiyeniz", f"{veri['bakiye']:.2f} TL")
+col2.metric("📊 Toplam İşlem Sayısı", len(veri["gecmis"]))
+
+st.write("### 📋 İşlem Geçmişi ve Analiz")
+tab1, tab2 = st.tabs(["İşlem Listesi", "Görsel Grafikler"])
+
+with tab1:
+    if veri["gecmis"]:
+        df = pd.DataFrame(veri["gecmis"])
+        # En yeni işlemi en üstte göster
+        st.dataframe(df.sort_values(by="tarih", ascending=False), use_container_width=True)
+    else:
+        st.info("Henüz bir işlem kaydı yok.")
+
+with tab2:
+    if veri["gecmis"]:
+        df = pd.DataFrame(veri["gecmis"])
+        st.subheader("Harcama/Gelir Grafiği")
+        st.bar_chart(data=df, x="aciklama", y="miktar")
+    else:
+        st.info("Grafik oluşturmak için önce veri ekleyin.")
+
+# Alt Bilgi
+st.markdown("---")
+st.caption(f"Veriler '{DOSYA_ADI}' dosyasında saklanmaktadır.")
