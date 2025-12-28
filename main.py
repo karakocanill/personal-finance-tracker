@@ -7,7 +7,7 @@ from datetime import datetime
 from fpdf import FPDF
 
 # Veri dosyası
-DOSYA_ADI = "finans_verileri.json"
+DOSYA_ADI = "kullanici_verileri.json"
 
 
 def verileri_yukle():
@@ -17,7 +17,7 @@ def verileri_yukle():
                 return json.load(dosya)
         except:
             pass
-    return {"bakiye": 0.0, "gecmis": []}
+    return {}
 
 
 def verileri_kaydet(veri):
@@ -32,100 +32,98 @@ def piyasa_verilerini_al():
         data = res.json()
         usd = data["rates"]["TRY"]
         eur = usd / data["rates"]["EUR"]
-        ons_altin = 2050.0  # Örnek sabit değer
-        gram_altin = (ons_altin / 31.1035) * usd
-        return {"USD": usd, "EUR": eur, "ALTIN": gram_altin}
+        return {"USD": usd, "EUR": eur}
     except:
-        return {"USD": 30.0, "EUR": 32.0, "ALTIN": 2000.0}
+        return {"USD": 30.0, "EUR": 32.0}
 
 
 # --- SAYFA AYARLARI ---
 st.set_page_config(page_title="Anıl Finance Pro Max", page_icon="💎", layout="wide")
 
-# --- LOGIN SİSTEMİ (BASİT) ---
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
+# Veri Altyapısını Başlat
+if 'tum_veriler' not in st.session_state:
+    st.session_state.tum_veriler = verileri_yukle()
+if 'user' not in st.session_state:
+    st.session_state.user = None
 
-if not st.session_state.logged_in:
-    st.title("🔐 Finans Paneli Giriş")
-    with st.form("login_form"):
-        kullanici = st.text_input("Kullanıcı Adı")
-        sifre = st.text_input("Şifre", type="password")
-        btn = st.form_submit_button("Giriş Yap")
-
-        if btn:
-            if kullanici == "anil" and sifre == "uskudar2025":  # Burayı istediğin gibi değiştir
-                st.session_state.logged_in = True
-                st.success("Giriş Başarılı!")
-                st.rerun()
-            else:
-                st.error("Hatalı kullanıcı adı veya şifre!")
-    st.stop()  # Giriş yapılmadıysa kodun geri kalanını çalıştırma
-
-# --- ANA UYGULAMA (GİRİŞ YAPILDIKTAN SONRA) ---
-if 'veri' not in st.session_state:
-    st.session_state.veri = verileri_yukle()
-
-# SIDEBAR
-st.sidebar.title(f"👋 Hoş geldin, {st.session_state.logged_in}")
-if st.sidebar.button("Çıkış Yap"):
-    st.session_state.logged_in = False
-    st.rerun()
-
-st.sidebar.markdown("---")
+# --- ÜST MENÜ: GİRİŞ / KAYIT ---
 piyasa = piyasa_verilerini_al()
-st.sidebar.subheader("🌍 Canlı Piyasalar")
-st.sidebar.metric("🇺🇸 USD/TRY", f"{piyasa['USD']:.2f} ₺")
-st.sidebar.metric("🇪🇺 EUR/TRY", f"{piyasa['EUR']:.2f} ₺")
-st.sidebar.metric("🟡 Altın (gr)", f"{piyasa['ALTIN']:.0f} ₺")
 
-st.sidebar.markdown("---")
-with st.sidebar.form("islem_form", clear_on_submit=True):
-    t = st.selectbox("Tür", ["Gelir", "Gider"])
-    m = st.number_input("Miktar (TL)", min_value=0.0)
-    k = st.selectbox("Kategori", ["Eğitim", "Gıda", "Oyun", "Ulaşım", "Maaş", "Yatırım"])
-    a = st.text_input("Açıklama")
-    if st.form_submit_button("Kaydet"):
-        if m > 0:
-            st.session_state.veri["bakiye"] += m if t == "Gelir" else -m
-            st.session_state.veri["gecmis"].append({
-                "tarih": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "tip": t, "miktar": m, "kategori": k, "aciklama": a
-            })
-            verileri_kaydet(st.session_state.veri)
+# Sağ üst köşede giriş butonu simülasyonu
+with st.container():
+    col_t, col_l = st.columns([8, 2])
+    with col_t:
+        st.title("🚀 Global Finans Dashboard")
+    with col_l:
+        if st.session_state.user:
+            st.write(f"👤 {st.session_state.user}")
+            if st.button("Çıkış Yap"):
+                st.session_state.user = None
+                st.rerun()
+        else:
+            mod = st.selectbox("Hesap İşlemi", ["Görüntüleme Modu", "Giriş Yap", "Kayıt Ol"])
+
+# --- GİRİŞ / KAYIT MANTIĞI ---
+if not st.session_state.user:
+    if mod == "Giriş Yap":
+        with st.form("login"):
+            u = st.text_input("Kullanıcı Adı")
+            p = st.text_input("Şifre", type="password")
+            if st.form_submit_button("Giriş"):
+                if u in st.session_state.tum_veriler and st.session_state.tum_veriler[u]['sifre'] == p:
+                    st.session_state.user = u
+                    st.rerun()
+                else:
+                    st.error("Hatalı bilgiler!")
+    elif mod == "Kayıt Ol":
+        with st.form("register"):
+            new_u = st.text_input("Yeni Kullanıcı Adı")
+            new_p = st.text_input("Şifre Belirle", type="password")
+            if st.form_submit_button("Hesap Oluştur"):
+                if new_u and new_u not in st.session_state.tum_veriler:
+                    st.session_state.tum_veriler[new_u] = {"sifre": new_p, "bakiye": 0.0, "gecmis": []}
+                    verileri_kaydet(st.session_state.tum_veriler)
+                    st.success("Kayıt başarılı! Şimdi giriş yapabilirsiniz.")
+                else:
+                    st.error("Bu kullanıcı adı alınmış veya geçersiz.")
+
+# --- ANA PANEL: HERKESE AÇIK KISIM (PİYASALAR) ---
+st.write("---")
+c1, c2, c3 = st.columns(3)
+c1.metric("🇺🇸 USD/TRY", f"{piyasa['USD']:.2f} ₺")
+c2.metric("🇪🇺 EUR/TRY", f"{piyasa['EUR']:.2f} ₺")
+c3.info("Kendi finansal verilerinizi yönetmek için lütfen giriş yapın.")
+
+# --- KULLANICIYA ÖZEL KISIM ---
+if st.session_state.user:
+    user_data = st.session_state.tum_veriler[st.session_state.user]
+
+    st.sidebar.header(f"📥 {st.session_state.user} Paneli")
+    with st.sidebar.form("islem"):
+        tip = st.selectbox("Tür", ["Gelir", "Gider"])
+        mik = st.number_input("Miktar", min_value=0.0)
+        acik = st.text_input("Açıklama")
+        if st.form_submit_button("Kaydet"):
+            user_data["bakiye"] += mik if tip == "Gelir" else -mik
+            user_data["gecmis"].append(
+                {"tarih": datetime.now().strftime("%Y-%m-%d"), "tip": tip, "miktar": mik, "ozet": acik})
+            verileri_kaydet(st.session_state.tum_veriler)
             st.rerun()
 
-# DASHBOARD
-st.title("🚀 Kişisel Finans Dashboard v8.0")
-c1, c2, c3 = st.columns(3)
-bak = st.session_state.veri['bakiye']
-c1.metric("💵 Bakiye", f"{bak:.2f} TL")
-c2.metric("💰 USD Karşılığı", f"${(bak / piyasa['USD']):.2f}")
-c3.metric("📊 Kayıt Sayısı", len(st.session_state.veri['gecmis']))
+    st.subheader(f"💰 Bakiyeniz: {user_data['bakiye']:.2f} TL")
+    if user_data["gecmis"]:
+        st.dataframe(pd.DataFrame(user_data["gecmis"]), use_container_width=True)
 
-tab1, tab2, tab3 = st.tabs(["📋 Geçmiş", "📈 Analiz", "📄 Rapor"])
-
-with tab1:
-    if st.session_state.veri['gecmis']:
-        st.dataframe(pd.DataFrame(st.session_state.veri['gecmis']), use_container_width=True)
-
-with tab2:
-    if st.session_state.veri['gecmis']:
-        df = pd.DataFrame(st.session_state.veri['gecmis'])
-        st.bar_chart(df.groupby("kategori")["miktar"].sum())
-
-with tab3:
-    if st.button("PDF Raporu Oluştur"):
-        try:
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Arial", 'B', 16)
-            pdf.cell(200, 10, txt="Finans Raporu", ln=True, align='C')
-            pdf.set_font("Arial", size=12)
-            pdf.cell(200, 10, txt=f"Bakiye: {bak:.2f} TL", ln=True)
-
-            # PDF'i stream olarak gönder (Hata almamak için latin-1)
-            output = pdf.output(dest='S').encode('latin-1')
-            st.download_button("📥 PDF İndir", data=output, file_name="rapor.pdf")
-        except Exception as e:
-            st.error(f"PDF Hatası: {e}")
+        # PDF BUTONU (Hata Alınan Kısım - Try-Except İçinde)
+        if st.button("📄 Raporu PDF İndir"):
+            try:
+                pdf = FPDF()
+                pdf.add_page()
+                pdf.set_font("Arial", 'B', 12)
+                pdf.cell(200, 10, txt=f"{st.session_state.user} Finans Raporu", ln=True, align='C')
+                out = pdf.output(dest='S').encode('latin-1')
+                st.download_button("İndirmeyi Başlat", data=out, file_name="rapor.pdf")
+            except Exception as e:
+                st.error(f"PDF kütüphanesi yüklenmemiş olabilir: {e}")
+else:
+    st.warning("⚠️ Kişisel cüzdanınızı görmek için lütfen sağ üstten giriş yapın.")
