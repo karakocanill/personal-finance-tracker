@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d0a5ce99-7376-48a7-8071-7f66c8aa2687" name="Changes" comment="feat: move transaction form to sidebar and fix widget visibility (v12.0)">
+    <list default="true" id="d0a5ce99-7376-48a7-8071-7f66c8aa2687" name="Changes" comment="feat: add smart budget analysis and final UI polish (v13.1)&#10;&#10;Implemented a real-time budget tracking algorithm that compares income vs. expenses.&#10;&#10;Added dynamic warning/success alerts based on financial health.&#10;&#10;Expanded market data coverage and refined high-contrast CSS widgets.&#10;&#10;Finalized multi-user session management and data persistence.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -195,7 +196,31 @@
       <option name="project" value="LOCAL" />
       <updated>1766955383122</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="feat: move transaction form to sidebar and fix widget visibility (v12.0)">
+      <option name="closed" value="true" />
+      <created>1766955956772</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1766955956772</updated>
+    </task>
+    <task id="LOCAL-00018" summary="feat: add smart budget analysis and final UI polish (v13.1)&#10;&#10;Implemented a real-time budget tracking algorithm that compares income vs. expenses.&#10;&#10;Added dynamic warning/success alerts based on financial health.&#10;&#10;Expanded market data coverage and refined high-contrast CSS widgets.&#10;&#10;Finalized multi-user session management and data persistence.">
+      <option name="closed" value="true" />
+      <created>1766956051321</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1766956051321</updated>
+    </task>
+    <task id="LOCAL-00019" summary="feat: add smart budget analysis and final UI polish (v13.1)&#10;&#10;Implemented a real-time budget tracking algorithm that compares income vs. expenses.&#10;&#10;Added dynamic warning/success alerts based on financial health.&#10;&#10;Expanded market data coverage and refined high-contrast CSS widgets.&#10;&#10;Finalized multi-user session management and data persistence.">
+      <option name="closed" value="true" />
+      <created>1766956190562</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1766956190562</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -223,6 +248,7 @@
     <MESSAGE value="enhance UI/UX with CSS widgets and popover authentication (v11.0)" />
     <MESSAGE value="fix: improve visibility of market widgets with CSS high contrast (v11.1)" />
     <MESSAGE value="feat: move transaction form to sidebar and fix widget visibility (v12.0)" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: move transaction form to sidebar and fix widget visibility (v12.0)" />
+    <MESSAGE value="feat: add smart budget analysis and final UI polish (v13.1)&#10;&#10;Implemented a real-time budget tracking algorithm that compares income vs. expenses.&#10;&#10;Added dynamic warning/success alerts based on financial health.&#10;&#10;Expanded market data coverage and refined high-contrast CSS widgets.&#10;&#10;Finalized multi-user session management and data persistence." />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: add smart budget analysis and final UI polish (v13.1)&#10;&#10;Implemented a real-time budget tracking algorithm that compares income vs. expenses.&#10;&#10;Added dynamic warning/success alerts based on financial health.&#10;&#10;Expanded market data coverage and refined high-contrast CSS widgets.&#10;&#10;Finalized multi-user session management and data persistence." />
   </component>
 </project>
