@@ -1,24 +1,26 @@
-🔗 **[Live Demo - Click Here to Test the App](https://personal-finance-tracker-jmpgzhbfnhzx9m8zvcppdg.streamlit.app)**
-# 💰 Personal Finance Tracker (v3.0)
+# 💹 Anıl Finance Global - SaaS Dashboard
 
-A lightweight and efficient personal finance tracking application built with **Python**. This project is designed to help users manage their daily incomes and expenses while keeping a detailed history of transactions.
+A professional, multi-user personal finance management dashboard built with **Python** and **Streamlit**. This application allows users to track their incomes and expenses while monitoring live market data in real-time.
 
-## 🚀 Features
-- **JSON Data Persistence:** All data is stored locally in a structured JSON format.
-- **Transaction History:** View a detailed log of all your financial activities with timestamps.
-- **Error Handling:** Robust input validation to prevent crashes.
-- **Real-time Balance:** Instant calculation of your current balance.
+🔗 **[Live Demo - Click Here to Test the App](https://anil-finans.streamlit.app)**
+
+## 🚀 Key Features
+* **Multi-User Authentication:** Secure registration and login system with individual data storage.
+* **Live Market Integration:** Real-time tracking of USD, EUR, GBP, Gold, and Silver prices via API.
+* **Financial Analytics:** Dynamic area charts and dataframes to visualize spending habits.
+* **Sidebar Management:** Easy transaction entry through an intuitive sidebar form.
+* **Admin Dashboard:** Specialized access for system-wide monitoring and database management.
 
 ## 🛠️ Tech Stack
-- **Language:** Python 3.14
-- **Data Format:** JSON
-- **Libraries:** `os`, `json`, `datetime`
+* **Frontend/Backend:** [Streamlit](https://streamlit.io/)
+* **Data Processing:** [Pandas](https://pandas.pydata.org/)
+* **Database:** JSON-based persistent storage (Ready for SQL migration)
+* **API:** ExchangeRate-API for live currency data
 
-## 📖 How to Use
-1. Run `main.py`.
-2. Choose an option from the menu (1-5).
-3. Enter the amount and a description for your transaction.
-4. Check your history anytime to track your spending habits.
+## 📂 Project Structure
+* `main.py`: Core application logic and UI.
+* `requirements.txt`: Project dependencies.
+* `kullanici_verileri.json`: Secured user data storage.
 
----
-*Developed as a part of my Computer Engineering journey at Uskudar University.*
+## 👨‍💻 Developed by
+**Anıl** - *Computer Engineering Student at Üsküdar University*
