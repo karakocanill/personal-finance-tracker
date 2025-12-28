@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d0a5ce99-7376-48a7-8071-7f66c8aa2687" name="Changes" comment="feat: final optimization for cloud deployment (v6.0)">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="d0a5ce99-7376-48a7-8071-7f66c8aa2687" name="Changes" comment="feat: integrate live market data for USD, EUR, Gold and Silver (v7.1)" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -107,7 +105,23 @@
       <option name="project" value="LOCAL" />
       <updated>1766934743324</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="feat: add live exchange rates and PDF report generation (v7.0)">
+      <option name="closed" value="true" />
+      <created>1766953550687</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1766953550687</updated>
+    </task>
+    <task id="LOCAL-00007" summary="feat: integrate live market data for USD, EUR, Gold and Silver (v7.1)">
+      <option name="closed" value="true" />
+      <created>1766953647474</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1766953647474</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -127,6 +141,8 @@
     <MESSAGE value="feat: migrate to web interface using Streamlit (v4.0)" />
     <MESSAGE value="feat: final optimization for cloud deployment (v5.0)" />
     <MESSAGE value="feat: final optimization for cloud deployment (v6.0)" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: final optimization for cloud deployment (v6.0)" />
+    <MESSAGE value="feat: add live exchange rates and PDF report generation (v7.0)" />
+    <MESSAGE value="feat: integrate live market data for USD, EUR, Gold and Silver (v7.1)" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: integrate live market data for USD, EUR, Gold and Silver (v7.1)" />
   </component>
 </project>
