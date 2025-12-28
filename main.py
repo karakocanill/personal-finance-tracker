@@ -2,7 +2,9 @@ import streamlit as st
 import json
 import os
 import pandas as pd
+import requests
 from datetime import datetime
+from fpdf import FPDF
 
 # Dosya adı
 DOSYA_ADI = "finans_verileri.json"
@@ -23,20 +25,34 @@ def verileri_kaydet(veri):
         json.dump(veri, dosya, indent=4, ensure_ascii=False)
 
 
-# --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Anıl Finance Pro", page_icon="💎", layout="wide")
+def doviz_kuru_al():
+    """Canlı döviz kuru çeker (Ücretsiz API)."""
+    try:
+        # Örnek bir ücretsiz API (Key gerektirmeyen basit bir yapı)
+        url = "https://api.exchangerate-api.com/v4/latest/TRY"
+        response = requests.get(url)
+        data = response.json()
+        return {
+            "USD": 1 / data["rates"]["USD"],
+            "EUR": 1 / data["rates"]["EUR"]
+        }
+    except:
+        return {"USD": 0.0, "EUR": 0.0}
 
-# Veriyi Başlat
+
+# --- SAYFA AYARLARI ---
+st.set_page_config(page_title="Anıl Finance Pro Max", page_icon="💎", layout="wide")
+
 if 'veri' not in st.session_state:
     st.session_state.veri = verileri_yukle()
 
-# --- SIDEBAR: VERİ GİRİŞİ ---
+# --- SIDEBAR: İŞLEM VE DÖVİZ ---
 st.sidebar.header("📥 İşlem Merkezi")
 with st.sidebar.form("pro_form", clear_on_submit=True):
     tip = st.selectbox("İşlem Türü", ["Gelir", "Gider"])
     miktar = st.number_input("Miktar (TL)", min_value=0.0, format="%.2f")
     kat = st.selectbox("Kategori", ["Eğitim", "Gıda", "Oyun/Hobi", "Ulaşım", "Maaş", "Yatırım", "Diğer"])
-    aciklama = st.text_input("Açıklama", placeholder="İşlem detayı...")
+    aciklama = st.text_input("Açıklama")
     kaydet = st.form_submit_button("Sisteme İşle")
 
 if kaydet and miktar > 0:
@@ -50,36 +66,31 @@ if kaydet and miktar > 0:
         "tarih": tarih, "tip": tip, "miktar": miktar, "kategori": kat, "aciklama": aciklama
     })
     verileri_kaydet(st.session_state.veri)
-    st.toast(f"{tip} başarıyla kaydedildi!", icon='🚀')
     st.rerun()
 
+# Canlı Döviz Bilgisi
+st.sidebar.markdown("---")
+st.sidebar.subheader("🌍 Canlı Döviz Kurları")
+kurlar = doviz_kuru_al()
+st.sidebar.write(f"🇺🇸 USD/TRY: **{kurlar['USD']:.2f}**")
+st.sidebar.write(f"🇪🇺 EUR/TRY: **{kurlar['EUR']:.2f}**")
+
 # --- ANA PANEL ---
-st.title("📈 Finansal Dashboard v6.0")
-st.write(f"Hoş geldin Anıl! İşte finansal durumunun özeti:")
+st.title("📈 Profesyonel Finans Yönetimi v7.0")
 
-# Metrikler
+# Üst Metrikler
 m1, m2, m3, m4 = st.columns(4)
-m1.metric("💵 Toplam Bakiye", f"{st.session_state.veri['bakiye']:.2f} TL")
-m2.metric("📊 İşlem Sayısı", len(st.session_state.veri["gecmis"]))
+bakiye = st.session_state.veri['bakiye']
+m1.metric("💵 Toplam Bakiye", f"{bakiye:.2f} TL")
+m2.metric("🇺🇸 Dolar Karşılığı", f"${(bakiye / kurlar['USD']):.2f}" if kurlar['USD'] > 0 else "0.00")
+m3.metric("📊 İşlem Sayısı", len(st.session_state.veri["gecmis"]))
+m4.metric("📅 Tarih", datetime.now().strftime("%d.%m.%Y"))
 
-# Basit bir analiz: En çok harcanan kategori
-if st.session_state.veri["gecmis"]:
-    df = pd.DataFrame(st.session_state.veri["gecmis"])
-    giderler = df[df["tip"] == "Gider"]
-    if not giderler.empty:
-        en_cok_kat = giderler.groupby("kategori")["miktar"].sum().idxmax()
-        m3.metric("⚠️ En Yüksek Gider", en_cok_kat)
-        m4.metric("📈 Ortalama İşlem", f"{df['miktar'].mean():.2f} TL")
-
-tab1, tab2, tab3 = st.tabs(["📋 İşlem Kayıtları", "📊 Görsel Analiz", "⚙️ Veri Yönetimi"])
+tab1, tab2, tab3 = st.tabs(["📋 İşlem Kayıtları", "📊 Görsel Analiz", "📄 Raporlama"])
 
 with tab1:
     if st.session_state.veri["gecmis"]:
         df = pd.DataFrame(st.session_state.veri["gecmis"])
-        # Filtreleme seçeneği
-        filtre = st.multiselect("Kategoriye Göre Filtrele", df["kategori"].unique())
-        if filtre:
-            df = df[df["kcategory"].isin(filtre)]
         st.dataframe(df.sort_values("tarih", ascending=False), use_container_width=True)
     else:
         st.info("Kayıt bulunamadı.")
@@ -87,22 +98,28 @@ with tab1:
 with tab2:
     if st.session_state.veri["gecmis"]:
         df = pd.DataFrame(st.session_state.veri["gecmis"])
-        c_left, c_right = st.columns(2)
-        with c_left:
+        col_l, col_r = st.columns(2)
+        with col_l:
             st.write("### Harcama Dağılımı")
             st.bar_chart(df[df["tip"] == "Gider"].groupby("kategori")["miktar"].sum())
-        with c_right:
-            st.write("### Gelir/Gider Dengesi")
-            st.pie_chart = st.area_chart(df.groupby("tip")["miktar"].sum())
+        with col_r:
+            st.write("### İşlem Trendi")
+            st.line_chart(df.set_index("tarih")["miktar"])
 
 with tab3:
-    st.write("### Veri Yedekleme")
-    st.download_button("Verileri JSON Olarak İndir",
-                       data=json.dumps(st.session_state.veri, indent=4),
-                       file_name="finans_yedek.json",
-                       mime="application/json")
-    if st.button("🔴 Tüm Verileri Sıfırla"):
-        if st.checkbox("Evet, tüm verilerimi silmek istiyorum"):
-            st.session_state.veri = {"bakiye": 0.0, "gecmis": []}
-            verileri_kaydet(st.session_state.veri)
-            st.rerun()
+    st.header("📄 PDF Rapor Oluştur")
+    if st.button("Finansal Özeti PDF Olarak Hazırla"):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(200, 10, txt="Kisisel Finans Raporu", ln=True, align='C')
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt=f"Tarih: {datetime.now().strftime('%Y-%m-%d')}", ln=True, align='L')
+        pdf.cell(200, 10, txt=f"Toplam Bakiye: {bakiye:.2f} TL", ln=True, align='L')
+
+        # PDF dosyasını kaydet ve indirilebilir yap
+        pdf_cikti = pdf.output(dest='S').encode('latin-1')
+        st.download_button(label="📥 PDF Raporu İndir",
+                           data=pdf_cikti,
+                           file_name="finans_raporu.pdf",
+                           mime="application/pdf")
