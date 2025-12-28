@@ -1,26 +1,22 @@
-# 💹 Anıl Finance Global - SaaS Dashboard
+# 💹 Anıl Finance: Professional Analytics & Market Dashboard
 
-A professional, multi-user personal finance management dashboard built with **Python** and **Streamlit**. This application allows users to track their incomes and expenses while monitoring live market data in real-time.
+A cloud-based personal finance management application built with **Python** and **Streamlit**. Designed for university-level software engineering portfolio, featuring multi-user authentication and real-time market data integration.
 
-🔗 **[Live Demo - Click Here to Test the App](https://anil-finans.streamlit.app)**
+🔗 **[Live Demo: anil-finans.streamlit.app](https://anil-finans.streamlit.app)**
 
-## 🚀 Key Features
-* **Multi-User Authentication:** Secure registration and login system with individual data storage.
-* **Live Market Integration:** Real-time tracking of USD, EUR, GBP, Gold, and Silver prices via API.
-* **Financial Analytics:** Dynamic area charts and dataframes to visualize spending habits.
-* **Sidebar Management:** Easy transaction entry through an intuitive sidebar form.
-* **Admin Dashboard:** Specialized access for system-wide monitoring and database management.
+## 🚀 Professional Features
+* **User Access Control:** Secure Sign-In and Sign-Up system with persistent JSON data storage.
+* **Market Indices:** Real-time monitoring of USD, EUR, GBP, Gold, and Silver via live API.
+* **Automated Budget Analysis:** Smart algorithm that monitors income/expense ratios and provides status alerts.
+* **Responsive Dashboard:** Interactive area charts and filtered data tables for financial history.
+* **Administrative Access:** Specialized portal for database monitoring and system management.
 
-## 🛠️ Tech Stack
-* **Frontend/Backend:** [Streamlit](https://streamlit.io/)
-* **Data Processing:** [Pandas](https://pandas.pydata.org/)
-* **Database:** JSON-based persistent storage (Ready for SQL migration)
-* **API:** ExchangeRate-API for live currency data
+## 🛠️ Technical Implementation
+* **Framework:** Streamlit (Web UI & Backend Logic)
+* **Data Management:** Pandas (DataFrames & GroupBy Analytics)
+* **Storage:** Multi-tenant JSON structure for data persistence.
+* **Deployment:** Hosted on Streamlit Cloud with automated GitHub sync.
 
-## 📂 Project Structure
-* `main.py`: Core application logic and UI.
-* `requirements.txt`: Project dependencies.
-* `kullanici_verileri.json`: Secured user data storage.
-
-## 👨‍💻 Developed by
-**Anıl** - *Computer Engineering Student at Üsküdar University*
+## 👨‍💻 Author
+**Anıl**
+*Computer Engineering Student at Üsküdar University*
