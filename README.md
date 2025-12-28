@@ -1,3 +1,4 @@
+🔗 **[Live Demo - Click Here to Test the App](https://personal-finance-tracker-jmpgzhbfnhzx9m8zvcppdg.streamlit.app)**
 # 💰 Personal Finance Tracker (v3.0)
 
 A lightweight and efficient personal finance tracking application built with **Python**. This project is designed to help users manage their daily incomes and expenses while keeping a detailed history of transactions.
